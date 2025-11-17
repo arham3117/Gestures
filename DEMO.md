@@ -8,7 +8,7 @@ If you just want to see it work without training your own model:
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/YOUR_USERNAME/GestureFlow.git
+git clone https://github.com/arham3117/GestureFlow.git
 cd GestureFlow
 ```
 
