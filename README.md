@@ -1,6 +1,17 @@
 # GestureFlow - Hand Gesture Recognition
 
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![License](https://img.shields.io/badge/License-Educational-green)
+![Accuracy](https://img.shields.io/badge/Accuracy-100%25-brightgreen)
+![Status](https://img.shields.io/badge/Status-Complete-success)
+
 A machine learning project that recognizes hand gestures in real-time using your webcam. Made for my Intro to AI class.
+
+## 🎥 Demo
+
+**[📹 Watch Demo Video](#)** *(Coming soon - record a demo video and add link here)*
+
+**[📖 Try It Yourself](DEMO.md)** - Follow the quick start guide to run it locally
 
 ## What Does This Project Do?
 
