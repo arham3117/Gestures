@@ -9,9 +9,7 @@ A machine learning project that recognizes hand gestures in real-time using your
 
 ## 🎥 Demo
 
-**[📹 Watch Demo Video](#)** *(Coming soon - record a demo video and add link here)*
-
-**[📖 Try It Yourself](DEMO.md)** - Follow the quick start guide to run it locally
+**[📹 Watch Demo Video](https://youtu.be/JF21TJSNjqo)** - See the system recognizing gestures in real-time!
 
 ## What Does This Project Do?
 
