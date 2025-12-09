@@ -1,0 +1,34 @@
+============================================================
+MODEL EVALUATION REPORT
+============================================================
+
+Model: models/best_model.h5
+Test Samples: 1200
+Number of Classes: 5
+Classes: fist, open_palm, peace_sign, pointing_finger, thumbs_up
+
+Overall Test Accuracy: 0.9983 (99.83%)
+
+Classification Report:
+------------------------------------------------------------
+                 precision    recall  f1-score   support
+
+           fist     1.0000    1.0000    1.0000       240
+      open_palm     1.0000    1.0000    1.0000       240
+     peace_sign     1.0000    0.9917    0.9958       240
+pointing_finger     0.9917    1.0000    0.9959       240
+      thumbs_up     1.0000    1.0000    1.0000       240
+
+       accuracy                         0.9983      1200
+      macro avg     0.9983    0.9983    0.9983      1200
+   weighted avg     0.9983    0.9983    0.9983      1200
+
+Confusion Matrix:
+------------------------------------------------------------
+[[240   0   0   0   0]
+ [  0 240   0   0   0]
+ [  0   0 238   2   0]
+ [  0   0   0 240   0]
+ [  0   0   0   0 240]]
+
+============================================================

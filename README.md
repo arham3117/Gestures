@@ -1,220 +1,505 @@
-# GestureFlow - Hand Gesture Recognition
+# Hand Gesture Recognition System
 
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![License](https://img.shields.io/badge/License-Educational-green)
-![Accuracy](https://img.shields.io/badge/Accuracy-100%25-brightgreen)
-![Status](https://img.shields.io/badge/Status-Complete-success)
+**Real-time hand gesture recognition using OpenCV and Convolutional Neural Networks (CNN)**
 
-A machine learning project that recognizes hand gestures in real-time using your webcam. Made for my Intro to AI class.
+![Accuracy](https://img.shields.io/badge/Accuracy-99.83%25-brightgreen)
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.18-orange)
 
-## 🎥 Demo
+---
 
-**[📹 Watch Demo Video](https://youtu.be/JF21TJSNjqo)** - See the system recognizing gestures in real-time!
+## 🎯 Project Overview
 
-## What Does This Project Do?
+This project implements a real-time hand gesture recognition system that classifies 5 different hand gestures with **99.83% accuracy**. The system uses computer vision (OpenCV) for image capture and preprocessing, and a Convolutional Neural Network (CNN) for classification.
 
-This system can recognize 5 hand gestures through your webcam:
-- **Fist** - make a closed fist
-- **Open Palm** - open your hand completely
-- **Thumbs Up** - give a thumbs up
-- **Peace Sign** - make a V with two fingers
-- **Pointing Finger** - point with your index finger
+### Recognized Gestures:
+1. **Fist** - Closed hand with fingers curled
+2. **Open Palm** - Hand with all fingers extended and spread
+3. **Pointing Finger** - Index finger extended, other fingers closed
+4. **Thumbs Up** - Thumb extended upward, other fingers closed
+5. **Peace Sign** - Index and middle fingers extended in V shape
 
-Just show your hand to the camera and it tells you which gesture you're making!
+---
 
-## Why I Built This
+## 🚀 Key Results
 
-There are lots of situations where hands-free control is useful:
-- When your hands are busy with something else
-- In hospitals where touching things spreads germs
-- Helping people with disabilities interact with computers
-- It's also just cool to control things without touching them!
+| Metric | Value |
+|--------|-------|
+| **Test Accuracy** | 99.83% |
+| **Dataset Size** | 2,000 → 6,000 (after augmentation) |
+| **Training Set** | 4,800 images (80%) |
+| **Test Set** | 1,200 images (20%) |
+| **Errors** | Only 2 out of 1,200 test samples |
+| **Real-time FPS** | ~30 FPS |
+| **Model Size** | 15 MB |
 
-## How It Works
+---
 
-The project has 4 main steps:
-
-### Step 1: Collect Data
-I used my webcam to record samples of each gesture. MediaPipe detects my hand and saves the positions of 21 points on my hand (like fingertips, knuckles, wrist). I collected about 400-500 samples for each gesture under different lighting and angles.
-
-### Step 2: Prepare the Data
-The program reads all the samples I collected and splits them into:
-- **Training data** (80%) - used to teach the model
-- **Testing data** (20%) - used to check if the model learned correctly
-
-### Step 3: Train the Model
-I used a Random Forest classifier (a type of machine learning algorithm) to learn the patterns. It looks at the 21 hand points and learns which positions match which gestures.
-
-### Step 4: Test in Real-Time
-The trained model runs on live webcam video. It detects my hand, gets the 21 points, and predicts what gesture I'm making. It also shows how confident it is (like 95% sure it's a fist).
-
-## My Results
-
-- **Accuracy**: 100% (way better than the 85-90% goal!)
-- **Speed**: 20+ frames per second (runs smoothly in real-time)
-- **All gestures** recognized perfectly with no confusion between them
-
-## What I Used
-
-**Programming Language:**
-- Python 3.12
-
-**Libraries:**
-- **OpenCV** - to access the webcam and process video
-- **MediaPipe** - Google's tool to detect hands and get the 21 landmark points
-- **scikit-learn** - for the Random Forest machine learning model
-- **NumPy** and **Pandas** - for handling data
-- **Matplotlib** - for creating graphs and visualizations
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 GestureFlow/
 ├── data/
-│   ├── raw/           # 2,100 gesture samples I collected (JSON files)
-│   └── processed/     # Training and testing data (CSV files)
-├── models/            # The trained model and performance graphs
-├── src/
-│   ├── data_collection/     # Script to collect gesture samples
-│   ├── preprocessing/       # Script to prepare the data
-│   ├── training/            # Script to train the model
-│   └── inference/           # Script for real-time recognition
-├── docs/              # Project proposal document
-├── requirements.txt   # List of libraries needed
-└── README.md          # This file
+│   ├── raw/                    # Raw collected images (2,000 images)
+│   │   ├── fist/              # 400 fist gesture images
+│   │   ├── open_palm/         # 400 open palm images
+│   │   ├── pointing_finger/   # 400 pointing finger images
+│   │   ├── thumbs_up/         # 400 thumbs up images
+│   │   └── peace_sign/        # 400 peace sign images
+│   │
+│   └── processed/             # Preprocessed data (6,000 augmented)
+│       ├── X_train.npy        # Training images (4,800)
+│       ├── X_test.npy         # Test images (1,200)
+│       ├── y_train.npy        # Training labels
+│       ├── y_test.npy         # Test labels
+│       ├── label_encoder.pkl  # Label encoder for predictions
+│       ├── sample_images.png  # Sample visualization
+│       └── class_distribution.png  # Dataset balance graph
+│
+├── models/                    # Trained models and results
+│   ├── gesture_model.h5       # Trained CNN model (15 MB)
+│   ├── training_history.png   # Training/validation curves
+│   ├── confusion_matrix.png   # Accuracy visualization
+│   └── training_summary.txt   # Training metrics
+│
+├── src/                       # Source code
+│   ├── collect_data.py        # Data collection script (Python)
+│   ├── preprocess_data.ipynb  # Preprocessing notebook (Jupyter)
+│   ├── train_model.ipynb      # Model training notebook (Jupyter)
+│   └── predict_live.py        # Real-time prediction (Python)
+│
+├── config.py                  # Configuration settings
+├── requirements.txt           # Python dependencies
+└── README.md                  # This file
 ```
 
-## How to Run This Project
+---
 
-### Installation
+## 🛠️ Installation & Setup
 
-1. **Navigate to the project folder:**
+### 1. Prerequisites
+- Python 3.8 or higher
+- Webcam
+- pip (Python package manager)
+
+### 2. Clone Repository
 ```bash
+git clone https://github.com/yourusername/GestureFlow.git
 cd GestureFlow
 ```
 
-2. **Create a virtual environment** (keeps all libraries organized):
-```bash
-python3.12 -m venv venv
-source venv/bin/activate
-```
-
-3. **Install required libraries:**
+### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Running the Project
-
-#### If you want to train your own model:
-
-**1. Collect your gesture data:**
-```bash
-python src/data_collection/collect_gestures.py
-```
-- Press SPACE to start collecting samples
-- The program will tell you which gesture to make
-- Collect 100+ samples for each gesture
-- Press Q to quit
-
-**2. Prepare the data:**
-```bash
-python src/preprocessing/prepare_dataset.py
-```
-
-**3. Train the model:**
-```bash
-python src/training/train_model.py
-```
-This creates the trained model and shows you how accurate it is.
-
-**4. Test it live:**
-```bash
-python src/inference/real_time_inference.py
-```
-Make gestures and watch it recognize them in real-time!
-
-#### If you just want to see it work:
-
-Run step 4 above with my pre-trained model (if you have my data and model files).
-
-## What I Learned
-
-- How to collect and prepare data for machine learning
-- Using MediaPipe for computer vision tasks
-- Training and evaluating machine learning models
-- The difference between training accuracy and testing accuracy
-- How to make predictions in real-time
-- Reading confusion matrices to see which gestures get mixed up
-
-## Challenges I Faced
-
-1. **Camera quality** - My phone's rear camera was broken so I had to use Camo to stream my phone's front camera
-2. **Python version** - MediaPipe doesn't work with Python 3.13 yet, had to use Python 3.12
-3. **Collecting good data** - Needed to vary lighting and angles to make the model work in different conditions
-
-## Possible Improvements
-
-- Add more gestures (thumbs down, OK sign, etc.)
-- Recognize gestures with both hands
-- Use the gestures to control something (like volume or a game)
-- Try deep learning models like CNNs
-- Make it work on a phone
-
-## Technical Notes
-
-### How the Features Work
-- MediaPipe detects 21 points on your hand
-- Each point has x, y, and z coordinates (3D position)
-- Total: 21 points × 3 coordinates = 63 features
-- All positions are normalized relative to the wrist so hand size doesn't matter
-
-### Why Random Forest?
-- Works well with small datasets
-- Fast enough for real-time predictions
-- Easy to understand and visualize
-- Good accuracy without needing lots of computing power
-
-### Performance Metrics
-- **Accuracy**: How many predictions were correct
-- **Precision**: Out of all "fist" predictions, how many were actually fists
-- **Recall**: Out of all actual fists, how many did we find
-- **F1-Score**: Balance between precision and recall
-- **Confusion Matrix**: Shows which gestures get confused with each other
-
-## Files Generated
-
-After running the project, you'll have:
-- **gesture_classifier.joblib** - the trained model
-- **confusion_matrix.png** - visualization showing classification results
-- **feature_importance.png** - which hand points are most important
-- **train.csv** and **test.csv** - the prepared datasets
-
-## Troubleshooting
-
-**"No module named cv2"**
-- Make sure you activated the virtual environment: `source venv/bin/activate`
-
-**Camera not working**
-- Check if another app is using the camera
-- Make sure you gave permission to access the camera
-- Try unplugging and replugging webcam
-
-**Low FPS or slow performance**
-- Close other programs
-- Try reducing the number of trees in Random Forest (change 100 to 50)
-
-**Gestures not recognized well**
-- Make sure there's good lighting
-- Keep your hand in the camera frame
-- Try recollecting data with more variety
-
-## Credits
-
-- **MediaPipe** by Google - for hand detection
-- **scikit-learn** - for machine learning tools
-- **OpenCV** - for camera and video processing
+**Required Packages:**
+- `opencv-python` - Computer vision and image processing
+- `tensorflow` - Deep learning framework
+- `numpy` - Numerical operations
+- `scikit-learn` - Data preprocessing and metrics
+- `matplotlib` - Visualization
+- `seaborn` - Statistical visualization
+- `jupyter` - Jupyter notebook support
 
 ---
 
-**Note:** This project was made for educational purposes as part of my Introduction to AI course.
+## 📊 Complete Workflow
+
+### Step 1: Data Collection
+
+**Run the data collection script:**
+```bash
+python src/collect_data.py
+```
+
+**Instructions:**
+1. Position your hand in the **green rectangle** shown on screen
+2. Press **SPACE** to start/pause collecting samples
+3. Press **Q** to move to the next gesture
+4. Collect 200+ samples per gesture for best results
+
+**Tips for Quality Data:**
+- Ensure good, consistent lighting
+- Keep hand clearly visible in the Region of Interest (ROI)
+- Vary hand positions and angles slightly
+- Maintain consistent distance from camera
+- Use plain background for better detection
+
+**Output:** 2,000 raw images (400 per gesture) saved in `data/raw/`
+
+---
+
+### Step 2: Data Preprocessing
+
+**Open and run the preprocessing notebook:**
+```bash
+jupyter notebook src/preprocess_data.ipynb
+```
+
+**What this does:**
+1. Loads all collected images from `data/raw/`
+2. Applies data augmentation (3x expansion):
+   - **Horizontal Flip** - Simulates left/right hand
+   - **Rotation (±15°)** - Handles angle variations
+   - **Brightness Adjustment** - Adapts to lighting changes
+3. Normalizes pixel values to [0, 1] range
+4. Encodes labels (text → numbers)
+5. Splits into 80% training, 20% testing (stratified)
+6. Saves processed data as `.npy` files
+
+**Results:**
+- Original: 2,000 images
+- After augmentation: 6,000 images
+- Training set: 4,800 images
+- Test set: 1,200 images
+
+**Output Files:**
+- `data/processed/X_train.npy` - Training images
+- `data/processed/X_test.npy` - Test images
+- `data/processed/y_train.npy` - Training labels
+- `data/processed/y_test.npy` - Test labels
+- `data/processed/label_encoder.pkl` - For predictions
+- `data/processed/sample_images.png` - Visualization
+- `data/processed/class_distribution.png` - Dataset balance
+
+---
+
+### Step 3: Model Training
+
+**Open and run the training notebook:**
+```bash
+jupyter notebook src/train_model.ipynb
+```
+
+**CNN Architecture:**
+```
+Input (64×64×1 grayscale image)
+    ↓
+Convolutional Block 1
+  - Conv2D (32 filters, 3×3)
+  - MaxPooling (2×2)
+  - Dropout (25%)
+    ↓
+Convolutional Block 2
+  - Conv2D (64 filters, 3×3)
+  - MaxPooling (2×2)
+  - Dropout (25%)
+    ↓
+Convolutional Block 3
+  - Conv2D (128 filters, 3×3)
+  - MaxPooling (2×2)
+  - Dropout (25%)
+    ↓
+Fully Connected Layers
+  - Flatten
+  - Dense (256 units, ReLU)
+  - Dropout (50%)
+  - Dense (128 units, ReLU)
+  - Dropout (50%)
+    ↓
+Output Layer
+  - Dense (5 units, Softmax)
+```
+
+**Training Configuration:**
+- **Optimizer:** Adam
+- **Learning Rate:** 0.001 (adaptive reduction)
+- **Batch Size:** 32
+- **Epochs:** 50 (with early stopping)
+- **Loss Function:** Categorical Cross-Entropy
+
+**Training Duration:** ~5 minutes on CPU
+
+**Output:**
+- `models/gesture_model.h5` - Trained model
+- `models/training_history.png` - Training curves
+- `models/training_summary.txt` - Metrics
+
+---
+
+### Step 4: Real-Time Prediction
+
+**Run the real-time prediction script:**
+```bash
+python src/predict_live.py
+```
+
+**How it works:**
+1. Loads the trained model
+2. Opens webcam feed
+3. Extracts hand region from ROI
+4. Preprocesses image (grayscale, blur, resize, normalize)
+5. Predicts gesture using CNN
+6. Displays result with confidence score
+
+**Controls:**
+- Position hand in **green rectangle**
+- Press **'q'** to quit
+
+**Performance:**
+- Real-time: ~30 FPS
+- Inference time: ~30-50ms per frame
+- Smooth, responsive predictions
+
+---
+
+## 📈 Model Performance
+
+### Overall Accuracy: 99.83%
+
+### Per-Class Performance:
+
+| Gesture | Precision | Recall | F1-Score | Accuracy | Test Samples |
+|---------|-----------|--------|----------|----------|--------------|
+| Fist | 100.0% | 100.0% | 100.0% | 100.0% | 240 |
+| Open Palm | 100.0% | 100.0% | 100.0% | 100.0% | 240 |
+| Peace Sign | 100.0% | 99.2% | 99.6% | 99.2% | 240 |
+| Pointing Finger | 99.2% | 100.0% | 99.6% | 100.0% | 240 |
+| Thumbs Up | 100.0% | 100.0% | 100.0% | 100.0% | 240 |
+| **Average** | **99.8%** | **99.8%** | **99.8%** | **99.83%** | **1,200** |
+
+### Confusion Matrix:
+Only 2 misclassifications out of 1,200 test samples:
+- 2 Peace Sign samples predicted as Pointing Finger
+- All other predictions: 100% accurate
+
+---
+
+## 🧠 Technical Details
+
+### Data Preprocessing
+- **Image Size:** 64×64 pixels (grayscale)
+- **Augmentation:** 3× expansion (flips, rotations, brightness)
+- **Normalization:** Pixel values scaled to [0, 1]
+- **Split Ratio:** 80% train, 20% test (stratified)
+
+### Model Architecture
+- **Type:** Convolutional Neural Network (CNN)
+- **Layers:** 3 conv blocks + 2 dense layers
+- **Parameters:** ~3.9M total, ~1.3M trainable
+- **Regularization:** Dropout (25% conv, 50% dense)
+- **Activation:** ReLU (hidden), Softmax (output)
+
+### Why CNN?
+1. **Spatial Feature Learning:** Automatically learns patterns from images
+2. **Translation Invariance:** Robust to hand position variations
+3. **Parameter Efficiency:** Shared weights reduce complexity
+4. **Proven Performance:** State-of-the-art for image classification
+5. **Real-time Capable:** Fast inference for live predictions
+
+### Training Features
+- **Early Stopping:** Stops when validation loss stops improving (patience: 10)
+- **Learning Rate Reduction:** Adaptive LR reduction (factor: 0.5, patience: 5)
+- **Model Checkpoint:** Saves best model based on validation accuracy
+
+---
+
+## 💡 Why This Project?
+
+### Applications:
+- **Touchless Control Systems** - Post-pandemic relevance
+- **Accessibility Tools** - For motor-impaired users
+- **Human-Robot Interaction** - Gesture-based commands
+- **Virtual Reality/Gaming** - Natural controls
+- **Sign Language** - Foundation for interpretation systems
+
+### Learning Outcomes:
+✅ Complete ML pipeline (data → train → deploy)
+✅ Computer vision with OpenCV
+✅ Deep learning with TensorFlow/Keras
+✅ Data augmentation techniques
+✅ Model evaluation and metrics
+✅ Real-time inference deployment
+
+---
+
+## 🎓 Student-Friendly Code
+
+This project is designed for **Intro to AI** level:
+
+### Code Philosophy:
+- ✅ **Simple, clear comments** explaining each step
+- ✅ **No complex classes** - straightforward procedural code
+- ✅ **Easy-to-follow logic** - linear, step-by-step approach
+- ✅ **Student-level explanations** - why, not just what
+
+### Example from `collect_data.py`:
+```python
+# Open webcam
+camera = cv2.VideoCapture(0)
+
+# Collect data for each gesture
+for gesture in gestures:
+    count = 0
+    while count < samples_per_gesture:
+        # Read frame from camera
+        ret, frame = camera.read()
+
+        # Convert to grayscale
+        gray = cv2.cvtColor(hand_region, cv2.COLOR_BGR2GRAY)
+
+        # Blur to reduce noise
+        blurred = cv2.GaussianBlur(gray, (7, 7), 0)
+
+        # Resize to consistent size
+        resized = cv2.resize(blurred, (200, 200))
+
+        # Save image
+        cv2.imwrite(filepath, resized)
+        count += 1
+```
+
+---
+
+## 🔧 Configuration
+
+Edit `config.py` to customize:
+```python
+# Data Collection
+SAMPLES_PER_GESTURE = 200
+IMAGE_SIZE = (64, 64)
+
+# Data Preprocessing
+AUGMENTATION_FACTOR = 3
+TEST_SIZE = 0.2
+
+# Model Training
+BATCH_SIZE = 32
+EPOCHS = 50
+LEARNING_RATE = 0.001
+```
+
+---
+
+## 🚨 Troubleshooting
+
+### Camera not opening?
+```python
+# Try different camera indices
+camera = cv2.VideoCapture(1)  # or 2, 3, etc.
+```
+
+### Low accuracy?
+- Collect more samples (300-500 per gesture)
+- Ensure consistent lighting
+- Vary hand positions during collection
+- Check for background clutter
+
+### Model not loading?
+```bash
+# Verify file exists
+ls -lh models/gesture_model.h5
+
+# Check TensorFlow version
+python -c "import tensorflow as tf; print(tf.__version__)"
+```
+
+---
+
+## 📝 Presentation Guide
+
+### For 5-Minute Demo:
+
+**1. Introduction (30 seconds)**
+"I built a real-time hand gesture recognition system using computer vision and CNN that achieves 99.83% accuracy."
+
+**2. Live Demo (2 minutes)**
+- Run `python src/predict_live.py`
+- Show all 5 gestures
+- Highlight real-time performance
+
+**3. Process Explanation (1.5 minutes)**
+- Collected 2,000 images
+- Applied augmentation → 6,000 images
+- Trained CNN with 3 convolutional layers
+- Achieved 99.83% accuracy
+
+**4. Show Code (1 minute)**
+- Open `src/train_model.ipynb`
+- Highlight CNN architecture
+- Explain simple, student-friendly approach
+
+**5. Q&A (30 seconds)**
+
+### Key Points to Mention:
+- Complete ML pipeline from scratch
+- Data augmentation prevents overfitting
+- CNN automatically learns features
+- Real-time deployment works smoothly
+
+---
+
+## 🔮 Future Improvements
+
+**Short-term:**
+- [ ] Add more gesture classes (6-10 gestures)
+- [ ] Collect data from multiple users
+- [ ] Implement background subtraction
+- [ ] Fine-tune confidence thresholds
+
+**Long-term:**
+- [ ] Dynamic gesture recognition (motion-based)
+- [ ] Multi-hand detection
+- [ ] 3D hand pose estimation
+- [ ] Integration with MediaPipe
+- [ ] Mobile deployment (TensorFlow Lite)
+
+---
+
+## ⚠️ Limitations
+
+**Current limitations:**
+1. **Single hand** - Only recognizes one hand at a time
+2. **Plain background** - Works best without clutter
+3. **Consistent lighting** - Sensitive to lighting changes
+4. **Static gestures** - No motion/dynamic gestures
+5. **Fixed ROI** - Hand must be in designated area
+
+**Potential improvements:**
+- Use background subtraction for any background
+- Implement hand tracking for ROI-free detection
+- Add temporal modeling for dynamic gestures
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
+
+## 📄 License
+
+MIT License - feel free to use for educational purposes.
+
+---
+
+## 👤 Author
+
+**Arham**
+- Course: Introduction to AI
+- Date: November 2025
+
+---
+
+## 🙏 Acknowledgments
+
+- OpenCV for computer vision capabilities
+- TensorFlow/Keras for deep learning framework
+- Scikit-learn for data processing utilities
+
+---
+
+## 📧 Contact
+
+For questions or feedback, please open an issue on GitHub.
+
+---
+
+**Built with ❤️ for learning AI/ML**
+

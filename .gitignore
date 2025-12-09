@@ -4,9 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
 build/
 develop-eggs/
 dist/
@@ -24,6 +21,7 @@ wheels/
 *.egg
 
 # Virtual environments
+.venv/
 venv/
 ENV/
 env/
@@ -36,25 +34,21 @@ env/
 *~
 
 # Project specific
-# Note: Including data and model for demo purposes
-# Normally you would exclude large files, but for a course project it's okay
 *.avi
 *.mp4
-# Uncomment below to exclude data/model if repo gets too large:
-# data/raw/*
-# !data/raw/.gitkeep
-# models/*.pkl
-# models/*.joblib
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Model files
-*.h5
-*.pb
-*.ckpt
+# Data files (too large for GitHub, not needed for demo)
+data/processed/*.npy
+data/processed/*.png
+data/raw/**/*.json
+data/raw/**/*.jpg
+data/raw/**/*.png
+
+# Note: Models are kept in git (only 15MB each)
