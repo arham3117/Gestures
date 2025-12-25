@@ -1,0 +1,16 @@
+# Production dependencies for GestureFlow API
+# Lighter than development requirements
+
+# API Framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# ML/Deep Learning
+tensorflow==2.18.0
+
+# Image Processing
+pillow==11.0.0
+numpy==1.26.4
+
+# Utilities
+python-multipart==0.0.19

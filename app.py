@@ -1,0 +1,168 @@
+"""
+GestureFlow API - Hand Gesture Recognition Service
+FastAPI application for serving gesture predictions
+"""
+
+import io
+import base64
+from contextlib import asynccontextmanager
+
+import numpy as np
+from PIL import Image
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import tensorflow as tf
+
+from config import GESTURES, MODEL_IMAGE_SIZE
+
+
+# Global model variable
+model = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load model on startup, cleanup on shutdown."""
+    global model
+    print("Loading gesture recognition model...")
+    model = tf.keras.models.load_model("models/gesture_model.h5")
+    print("Model loaded successfully!")
+    yield
+    print("Shutting down...")
+
+
+app = FastAPI(
+    title="GestureFlow API",
+    description="Real-time hand gesture recognition using CNN",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# Enable CORS for web clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class PredictionRequest(BaseModel):
+    """Request body for prediction endpoint."""
+    image: str  # Base64 encoded image
+
+
+class PredictionResponse(BaseModel):
+    """Response body for prediction endpoint."""
+    gesture: str
+    confidence: float
+    all_predictions: dict[str, float]
+
+
+class HealthResponse(BaseModel):
+    """Response body for health check."""
+    status: str
+    model_loaded: bool
+
+
+def preprocess_image(image_bytes: bytes) -> np.ndarray:
+    """
+    Preprocess image for model inference.
+    Applies same preprocessing as training pipeline.
+    """
+    # Open image and convert to grayscale
+    image = Image.open(io.BytesIO(image_bytes)).convert("L")
+
+    # Resize to model input size
+    image = image.resize(MODEL_IMAGE_SIZE, Image.Resampling.LANCZOS)
+
+    # Convert to numpy array and normalize
+    img_array = np.array(image, dtype=np.float32) / 255.0
+
+    # Add batch and channel dimensions: (1, 64, 64, 1)
+    img_array = img_array.reshape(1, MODEL_IMAGE_SIZE[0], MODEL_IMAGE_SIZE[1], 1)
+
+    return img_array
+
+
+@app.get("/", response_model=HealthResponse)
+async def root():
+    """Health check endpoint."""
+    return HealthResponse(
+        status="healthy",
+        model_loaded=model is not None
+    )
+
+
+@app.get("/health", response_model=HealthResponse)
+async def health_check():
+    """Health check for container orchestration."""
+    return HealthResponse(
+        status="healthy",
+        model_loaded=model is not None
+    )
+
+
+@app.post("/predict", response_model=PredictionResponse)
+async def predict(request: PredictionRequest):
+    """
+    Predict gesture from base64 encoded image.
+
+    Args:
+        request: Contains base64 encoded image string
+
+    Returns:
+        Predicted gesture, confidence, and all class probabilities
+    """
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    try:
+        # Decode base64 image
+        # Handle data URL format (e.g., "data:image/jpeg;base64,...")
+        image_data = request.image
+        if "," in image_data:
+            image_data = image_data.split(",")[1]
+
+        image_bytes = base64.b64decode(image_data)
+
+        # Preprocess image
+        processed_image = preprocess_image(image_bytes)
+
+        # Get prediction
+        predictions = model.predict(processed_image, verbose=0)[0]
+
+        # Get predicted class and confidence
+        predicted_idx = int(np.argmax(predictions))
+        confidence = float(predictions[predicted_idx])
+        gesture = GESTURES[predicted_idx]
+
+        # Create prediction dictionary for all classes
+        all_predictions = {
+            GESTURES[i]: float(predictions[i])
+            for i in range(len(GESTURES))
+        }
+
+        return PredictionResponse(
+            gesture=gesture,
+            confidence=confidence,
+            all_predictions=all_predictions
+        )
+
+    except base64.binascii.Error:
+        raise HTTPException(status_code=400, detail="Invalid base64 encoding")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error processing image: {str(e)}")
+
+
+@app.get("/gestures")
+async def list_gestures():
+    """List all recognized gestures."""
+    return {"gestures": GESTURES, "count": len(GESTURES)}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

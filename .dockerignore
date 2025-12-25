@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+env
+*.egg-info
+.eggs
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Data (not needed for inference)
+data/
+
+# Development files
+*.md
+*.pptx
+.DS_Store
+*.log
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Models we don't need (keep only gesture_model.h5)
+models/best_model.h5
+models/*.png
+models/*.txt
+
+# Test files
+tests/
+*_test.py
+test_*.py
+
+# Local development
+.env.local
+.env.development
