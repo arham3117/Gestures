@@ -81,8 +81,17 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     # Resize to model input size
     image = image.resize(MODEL_IMAGE_SIZE, Image.Resampling.LANCZOS)
 
-    # Convert to numpy array and normalize
-    img_array = np.array(image, dtype=np.float32) / 255.0
+    # Convert to numpy array
+    img_array = np.array(image, dtype=np.float32)
+
+    # Apply Gaussian blur (same as training: 7x7 kernel)
+    # Using PIL's GaussianBlur equivalent
+    from PIL import ImageFilter
+    image_blurred = image.filter(ImageFilter.GaussianBlur(radius=3))
+    img_array = np.array(image_blurred, dtype=np.float32)
+
+    # Normalize to 0-1
+    img_array = img_array / 255.0
 
     # Add batch and channel dimensions: (1, 64, 64, 1)
     img_array = img_array.reshape(1, MODEL_IMAGE_SIZE[0], MODEL_IMAGE_SIZE[1], 1)

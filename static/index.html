@@ -82,10 +82,39 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transform: scaleX(-1);
         }
 
         #preview {
             display: none;
+            transform: none;
+        }
+
+        /* ROI Guide overlay */
+        .roi-guide {
+            position: absolute;
+            top: 10%;
+            right: 5%;
+            width: 40%;
+            height: 60%;
+            border: 3px solid #00ff88;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .roi-label {
+            position: absolute;
+            top: 10%;
+            right: 5%;
+            transform: translateY(-100%);
+            background: #00ff88;
+            color: #1a1a2e;
+            padding: 4px 8px;
+            border-radius: 4px 4px 0 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            z-index: 10;
         }
 
         .controls {
@@ -177,6 +206,10 @@
             color: #00ff88;
         }
 
+        .low-confidence {
+            color: #ff6b6b;
+        }
+
         .all-predictions {
             display: flex;
             flex-wrap: wrap;
@@ -240,6 +273,19 @@
             font-size: 0.85rem;
         }
 
+        .tip-box {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+
+        .tip-box strong {
+            color: #00ff88;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -259,10 +305,15 @@
                 <div class="video-container">
                     <video id="webcam" autoplay playsinline></video>
                     <canvas id="canvas" style="display: none;"></canvas>
+                    <div class="roi-guide" id="roiGuide"></div>
+                    <div class="roi-label" id="roiLabel">Place hand here</div>
                 </div>
                 <div class="controls">
                     <button id="startCam" class="btn-primary">Start Camera</button>
                     <button id="capture" class="btn-secondary" disabled>Capture & Predict</button>
+                </div>
+                <div class="tip-box">
+                    <strong>Tip:</strong> Place your hand inside the green box against a plain background for best results.
                 </div>
             </div>
 
@@ -282,6 +333,9 @@
                     <button id="predictUpload" class="btn-primary hidden">Predict Gesture</button>
                     <button id="clearUpload" class="btn-secondary hidden">Clear</button>
                 </div>
+                <div class="tip-box">
+                    <strong>Tip:</strong> For best results, upload images with just the hand gesture against a plain background.
+                </div>
             </div>
 
             <!-- Result Card -->
@@ -294,6 +348,9 @@
                     <p>Detected Gesture:</p>
                     <div id="gestureName" class="gesture-name">-</div>
                     <div id="confidenceValue" class="confidence">-</div>
+                    <div id="confidenceWarning" class="hidden" style="color: #ff6b6b; font-size: 0.9rem; margin-top: 5px;">
+                        Low confidence - try better lighting or positioning
+                    </div>
                     <div class="all-predictions" id="allPredictions"></div>
                 </div>
             </div>
@@ -326,8 +383,11 @@
         const result = document.getElementById('result');
         const gestureName = document.getElementById('gestureName');
         const confidenceValue = document.getElementById('confidenceValue');
+        const confidenceWarning = document.getElementById('confidenceWarning');
         const allPredictions = document.getElementById('allPredictions');
         const gesturesList = document.getElementById('gesturesList');
+        const roiGuide = document.getElementById('roiGuide');
+        const roiLabel = document.getElementById('roiLabel');
 
         let stream = null;
         let uploadedImage = null;
@@ -354,6 +414,8 @@
                 webcam.srcObject = stream;
                 startCamBtn.textContent = 'Stop Camera';
                 captureBtn.disabled = false;
+                roiGuide.style.display = 'block';
+                roiLabel.style.display = 'block';
             } catch (error) {
                 showStatus('Camera access denied. Please allow camera access.', 'error');
             }
@@ -367,6 +429,8 @@
             }
             startCamBtn.textContent = 'Start Camera';
             captureBtn.disabled = true;
+            roiGuide.style.display = 'none';
+            roiLabel.style.display = 'none';
         }
 
         startCamBtn.addEventListener('click', () => {
@@ -378,11 +442,31 @@
         });
 
         captureBtn.addEventListener('click', async () => {
-            canvas.width = webcam.videoWidth;
-            canvas.height = webcam.videoHeight;
+            const videoWidth = webcam.videoWidth;
+            const videoHeight = webcam.videoHeight;
+
+            // Define ROI matching the visual guide (right side of frame, same as training)
+            // ROI: x from 50% to 90%, y from 10% to 70%
+            const roiX = Math.floor(videoWidth * 0.5);
+            const roiY = Math.floor(videoHeight * 0.1);
+            const roiWidth = Math.floor(videoWidth * 0.4);
+            const roiHeight = Math.floor(videoHeight * 0.6);
+
+            // Set canvas to ROI size
+            canvas.width = roiWidth;
+            canvas.height = roiHeight;
+
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(webcam, 0, 0);
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+            // Since video is mirrored (scaleX(-1)), we need to flip when drawing
+            // The visual ROI is on the RIGHT of the mirrored video
+            // In the actual video data, this corresponds to the LEFT side
+            // So we capture from the left side of the actual video frame
+            const actualX = videoWidth - roiX - roiWidth;
+
+            ctx.drawImage(webcam, actualX, roiY, roiWidth, roiHeight, 0, 0, roiWidth, roiHeight);
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.9);
             await predict(imageData);
         });
 
@@ -478,7 +562,17 @@
             result.classList.remove('hidden');
 
             gestureName.textContent = data.gesture.replace('_', ' ');
-            confidenceValue.textContent = `${(data.confidence * 100).toFixed(1)}% confidence`;
+            const confidence = data.confidence * 100;
+            confidenceValue.textContent = `${confidence.toFixed(1)}% confidence`;
+
+            // Show warning for low confidence
+            if (confidence < 60) {
+                confidenceValue.classList.add('low-confidence');
+                confidenceWarning.classList.remove('hidden');
+            } else {
+                confidenceValue.classList.remove('low-confidence');
+                confidenceWarning.classList.add('hidden');
+            }
 
             // Show all predictions as bars
             allPredictions.innerHTML = Object.entries(data.all_predictions)
@@ -498,6 +592,10 @@
 
         // Initialize
         loadGestures();
+
+        // Hide ROI guide initially
+        roiGuide.style.display = 'none';
+        roiLabel.style.display = 'none';
     </script>
 </body>
 </html>
