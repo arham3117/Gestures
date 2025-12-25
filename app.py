@@ -73,25 +73,26 @@ class HealthResponse(BaseModel):
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
     """
     Preprocess image for model inference.
-    Applies same preprocessing as training pipeline.
+    Applies same preprocessing as training pipeline:
+    1. Convert to grayscale
+    2. Apply Gaussian blur (7x7 kernel) - BEFORE resize, like training
+    3. Resize to 64x64
+    4. Normalize to 0-1
     """
+    from PIL import ImageFilter
+
     # Open image and convert to grayscale
     image = Image.open(io.BytesIO(image_bytes)).convert("L")
 
-    # Resize to model input size
+    # Apply Gaussian blur BEFORE resizing (same as data collection)
+    # PIL radius=3 approximates OpenCV (7,7) kernel
+    image = image.filter(ImageFilter.GaussianBlur(radius=3))
+
+    # Resize to model input size (64x64)
     image = image.resize(MODEL_IMAGE_SIZE, Image.Resampling.LANCZOS)
 
-    # Convert to numpy array
-    img_array = np.array(image, dtype=np.float32)
-
-    # Apply Gaussian blur (same as training: 7x7 kernel)
-    # Using PIL's GaussianBlur equivalent
-    from PIL import ImageFilter
-    image_blurred = image.filter(ImageFilter.GaussianBlur(radius=3))
-    img_array = np.array(image_blurred, dtype=np.float32)
-
-    # Normalize to 0-1
-    img_array = img_array / 255.0
+    # Convert to numpy array and normalize to 0-1
+    img_array = np.array(image, dtype=np.float32) / 255.0
 
     # Add batch and channel dimensions: (1, 64, 64, 1)
     img_array = img_array.reshape(1, MODEL_IMAGE_SIZE[0], MODEL_IMAGE_SIZE[1], 1)

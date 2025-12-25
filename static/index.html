@@ -445,8 +445,8 @@
             const videoWidth = webcam.videoWidth;
             const videoHeight = webcam.videoHeight;
 
-            // Define ROI matching the visual guide (right side of frame, same as training)
-            // ROI: x from 50% to 90%, y from 10% to 70%
+            // Define ROI matching the visual guide and training data collection
+            // Training used: x1=50%, y1=10%, x2=90%, y2=70% of flipped frame
             const roiX = Math.floor(videoWidth * 0.5);
             const roiY = Math.floor(videoHeight * 0.1);
             const roiWidth = Math.floor(videoWidth * 0.4);
@@ -458,13 +458,14 @@
 
             const ctx = canvas.getContext('2d');
 
-            // Since video is mirrored (scaleX(-1)), we need to flip when drawing
-            // The visual ROI is on the RIGHT of the mirrored video
-            // In the actual video data, this corresponds to the LEFT side
-            // So we capture from the left side of the actual video frame
-            const actualX = videoWidth - roiX - roiWidth;
-
-            ctx.drawImage(webcam, actualX, roiY, roiWidth, roiHeight, 0, 0, roiWidth, roiHeight);
+            // The video element shows mirrored view (CSS scaleX(-1))
+            // But the actual video data is NOT mirrored
+            // Training script: flipped frame first, THEN extracted ROI from right side
+            // So we need to flip the canvas, then draw
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(webcam, -roiX - roiWidth, roiY, roiWidth, roiHeight, -roiWidth, 0, roiWidth, roiHeight);
+            ctx.restore();
 
             const imageData = canvas.toDataURL('image/jpeg', 0.9);
             await predict(imageData);
