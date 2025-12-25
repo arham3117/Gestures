@@ -6,7 +6,8 @@ Simple settings for the project
 """
 
 # List of gestures we recognize
-GESTURES = ['fist', 'open_palm', 'pointing_finger', 'thumbs_up', 'peace_sign']
+# IMPORTANT: Order must match LabelEncoder from training (alphabetical)
+GESTURES = ['fist', 'open_palm', 'peace_sign', 'pointing_finger', 'thumbs_up']
 
 # Data Collection Settings
 SAMPLES_PER_GESTURE = 200  # How many images to collect per gesture
