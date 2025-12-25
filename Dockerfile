@@ -28,6 +28,9 @@ RUN pip install --no-cache-dir -r requirements-deploy.txt
 COPY config.py .
 COPY app.py .
 
+# Copy frontend
+COPY static/ static/
+
 # Copy trained model
 COPY models/gesture_model.h5 models/
 

@@ -5,12 +5,15 @@ FastAPI application for serving gesture predictions
 
 import io
 import base64
+from pathlib import Path
 from contextlib import asynccontextmanager
 
 import numpy as np
 from PIL import Image
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import tensorflow as tf
 
@@ -87,9 +90,18 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     return img_array
 
 
-@app.get("/", response_model=HealthResponse)
+# Serve static files (frontend)
+static_path = Path(__file__).parent / "static"
+if static_path.exists():
+    app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+
+
+@app.get("/")
 async def root():
-    """Health check endpoint."""
+    """Serve the frontend."""
+    index_path = static_path / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path))
     return HealthResponse(
         status="healthy",
         model_loaded=model is not None
